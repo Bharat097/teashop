@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% block content_body %}
+
+<br>
+<div class="container">
+
+    <div class="alert alert-danger" id="add_alert_error" role="alert" style="display: none;">
+    </div>
+    <div class="alert alert-success" id="add_alert_success" role="alert" style="display: none;">
+    </div>
+
+    <h3>Add Item to Inventory</h3>
+    <br>
+
+    <form method="POST">
+        {% csrf_token %}
+        <div class="form-group">
+          <label for="name">Name</label>
+          <input type="text" class="form-control" id="name" placeholder="Enter Item Name" name="name" required />
+          <div class="invalid-feedback">
+            Please provide a valid Name.
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="price">Price</label>
+          <input type="number" class="form-control" id="price" placeholder="Price of Item" name="price" required>
+        </div>
+        <div class="form-group">
+            <label for="desc">Item Description</label>
+            <textarea class="form-control" id="desc" rows="3" name="desc" required></textarea>
+        </div>
+        <input type="submit" class="btn btn-primary" id="add_item" value="Add Item">
+    </form>
+
+</div>
+
+<br>
+<br>
+<br>
+
+<div class="container">
+
+    <div class="alert alert-danger" id="remove_alert_error" role="alert" style="display: none;">
+    </div>
+    <div class="alert alert-success" id="remove_alert_success" role="alert" style="display: none;">
+    </div>
+
+    <h3>Items List</h3>
+    <br>
+
+    <!-- <ul class="list-group" id="items_list">
+
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            Item Name
+            <span>Price</span>
+            <span>Action</span>
+        </li>
+
+        {% for item in items %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                {{ item.name }}
+                <span>{{ item.price }}</span>
+                <span><input type="submit" class="btn btn-primary" id="remove_item" value="Remove Item"></span>
+            </li>
+        {% endfor %}
+
+    </ul> -->
+
+    <table class="table table-striped">
+        <thead>
+          <tr>
+            <th scope="col">Item Name</th>
+            <th scope="col">Price</th>
+            <th scope="col">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+
+                <tr>
+                    <td><a href="{% url 'detail' item.id %}">{{ item.name }}</a></td>
+                    <td>{{ item.price }}</td>
+                    <td><input type="submit" class="btn btn-primary" id="{{ item.id }}" value="Remove Item" name="remove_item"></td>
+                </tr>
+
+            {% endfor %}
+        </tbody>
+      </table>
+
+</div>
+<br>
+<br>
+
+{% endblock %}
+
+{% block content_script %}
+
+<script>
+    $("#add_item").click(function(e){
+        e.preventDefault();
+        let csrf = $("input[name=csrfmiddlewaretoken]").val()
+        $.ajax({
+            url: '',
+            type: 'POST',
+            data: {
+                name: $("#name").val(),
+                price: $("#price").val(),
+                desc: $("#desc").val(),
+                csrfmiddlewaretoken: csrf
+            },
+            success: function(response){
+                $("#add_alert_error").hide()
+                $("#add_alert_success").html("Successfully Added Item: " + response.data.name)
+                tableBody = $("table tbody");
+                markup = "<tr>" +
+                            "<td><a href=/detail/" + response.data.id + ">" + response.data.name + "</a></td>" +
+                            "<td>" + response.data.price + "</td>" +
+                            '<td><input type="submit" class="btn btn-primary" id="remove_item" value="Remove Item"></td>' +
+                         "</tr>"
+                $("#add_alert_success").show()
+                tableBody.append(markup)
+            },
+            error: function(response) {
+                $("#add_alert_error").html("Failed to add Item: " + response.responseJSON.data)
+                $("#add_alert_error").show()
+                $("#add_alert_success").hide()
+            }
+        });
+    });
+
+    $("input[name=remove_item]").click(function(e){
+        e.preventDefault();
+        let csrf = $("input[name=csrfmiddlewaretoken]").val()
+        let id = this.id
+
+        $.ajax({
+            url: 'delete',
+            type: 'POST',
+            data: {
+                id: id,
+                csrfmiddlewaretoken: csrf
+            },
+            success: function(response){
+                $("#remove_alert_error").hide()
+                $("#remove_alert_success").html("Successfully Deleted Item: " + response.data.name)
+                $("#remove_alert_success").show()
+                $("#" + id).closest('tr').remove()
+                console.log("#" + id)
+            },
+            error: function(response) {
+                $("#remove_alert_error").html("Failed to Delete Item: " + response.responseJSON.data)
+                $("#remove_alert_error").show()
+                $("#remove_alert_success").hide()
+            }
+        });
+
+    });
+
+</script>
+        
+{% endblock %}

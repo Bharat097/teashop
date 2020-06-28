@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block content_body %}
+
+<br>
+<div class="container">
+    <nav class="navbar navbar-light bg-light">
+        <a class="navbar-brand" href="{% url 'index' %}">Back</a>
+    </nav>
+    <br>
+    <br>
+    <h3>{{item.name}}</h3>
+    <br>
+    <div>
+        <h4 class="d-inline">Price: </h4> {{item.price}}
+    </div>
+    <br>
+    <div>
+        <h5 class="d-inline">Description: </h5><p>{{item.desc}}</p>
+    </div>
+    
+</div>
+
+
+{% endblock %}
